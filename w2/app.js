@@ -16,23 +16,23 @@ const itemPrice = 15;
 // A function is a block of code designed to perform a particular task.
 
 const handleButtonClick = function(){
-    // totalCost = totalCost + 1;
+    // totalCost = totalCost + itemPrice;
 
-    // Increase totalCost by 1 each time the button is clicked
-    totalCost += 1;
+    // Increase totalCost by itemPrice each time the button is clicked
+    totalCost += itemPrice;
 
     // Template strings (literal) to easily combine our variables and text into one message
-    let message = `Hello! You have clicked the button ${totalCost} time(s).`;
+    let message = `Current Total: ${totalCost}.`;
 
     // This is basic decision-making in JavaScript!
     // Use a simple 'if' statement to make our page react differently based on totalCost.
-    if (totalCost >= 5){
+    if (totalCost >= 60){
         // We can even change the style of an HTML element directly with JavaScript!
         // Change text color
-        message += ' Wow, you are a super clicker!';
-        totalDisplayElement.style.color = 'purple';
+        totalDisplayElement.style.color = 'red';
+        message += ' Over Budget!';
     } else {
-        totalDisplayElement.style.color = '#333';
+        totalDisplayElement.style.color = '#000';
     }
     // Update the text content of our paragraph element on the page.
     // This is how JavaScript makes changes visible on the web page!
