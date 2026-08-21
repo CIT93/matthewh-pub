@@ -4,8 +4,8 @@ console.log('Hello from app.js! Your JavaScript is connected and running!');
 // We use document.getElementById() to get a reference to an element by its unique ID.
 // We store these references in 'const' variables because the elements themselves won't change.
 
-const messageDisplayElement = document.getElementById("output-message");
-const updateButton = document.getElementById("update-button");
+const totalDisplayElement = document.getElementById("total-display");
+const addItemButton = document.getElementById("add-item-btn");
 
 // These variables will change as the user interacts with the page.
 let userName = "Matt";
@@ -30,13 +30,13 @@ const handleButtonClick = function(){
         // We can even change the style of an HTML element directly with JavaScript!
         // Change text color
         message += ' Wow, you are a super clicker!';
-        messageDisplayElement.style.color = 'purple';
+        totalDisplayElement.style.color = 'purple';
     } else {
-        messageDisplayElement.style.color = '#333';
+        totalDisplayElement.style.color = '#333';
     }
     // Update the text content of our paragraph element on the page.
     // This is how JavaScript makes changes visible on the web page!
-    messageDisplayElement.textContent = message;
+    totalDisplayElement.textContent = message;
 
     console.log(`Button clicked! Current click count: ${clickCount}`);
 }
@@ -48,10 +48,10 @@ document.addEventListener('DOMContentLoaded', function(){
     
     console.log('DOM fully loaded and parsed, a;; is ready for interaction');
 
-    // Attach an event listener to our 'updateButton.
-    // When 'updateButton' receives a 'click' event, the 'handleButtonClick' function will execute.
-    updateButton.addEventListener('click', handleButtonClick);
+    // Attach an event listener to our 'addItemButton.
+    // When 'addItemButton' receives a 'click' event, the 'handleButtonClick' function will execute.
+    addItemButton.addEventListener('click', handleButtonClick);
 
-    messageDisplayElement.textContent = `Welcome, ${userName}! Click the button above to start counting.`;
+    totalDisplayElement.textContent = `Welcome, ${userName}! Click the button above to start counting.`;
 });
 
