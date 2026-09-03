@@ -1,16 +1,27 @@
-// Part 1: Import order-handler.js
+// Import order-handler.js
 import * as orderHandler from "./order-handler.js";
+// Step 3: Refactor app.js
+import * as priceCalculator from './price-calculator.js';
 
-// Part 2: Select elements
+// Select elements
 const orderForm = document.getElementById("order-form");
 const orderSummary = document.getElementById("order-summary");
 
-// Part 3: Create handleOrderSubmit function
+const orders = [];
+
+// Create handleOrderSubmit function
 const handleOrderSubmit = function(event){
     // Stop the reload
     event.preventDefault();
     //Get data
     const order = orderHandler.getOrderInputs();
+    const calculatedPrice = priceCalculator.calculateTotal(order);
+
+    const newOrder = {
+        ...order,
+        ...calculatedPrice,
+        timestamp: new Date().toISOString()
+    }
 
     // Update the page
     let summary = `Orders ${order.quantity} ${order.size} T-shirts`;
@@ -21,10 +32,13 @@ const handleOrderSubmit = function(event){
     }
 
     orderSummary.textContent = summary;
+
+    orders.push(newOrder);
+    console.log(orders);
 }
 
 
-// Part 4: The init function
+// The init function
 const init = function(){
     // listen to the form
     orderForm.addEventListener('submit', handleOrderSubmit);
@@ -32,5 +46,5 @@ const init = function(){
     console.log("App initialized");
 }
 
-// Part 5: Start app
+// Start app
 document.addEventListener('DOMContentLoaded', init);
