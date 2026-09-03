@@ -3,9 +3,10 @@ import * as orderHandler from "./order-handler.js";
 // Step 3: Refactor app.js
 import * as priceCalculator from './price-calculator.js';
 
+import * as resultsDisplay from './results-display.js';
+
 // Select elements
 const orderForm = document.getElementById("order-form");
-const orderSummary = document.getElementById("order-summary");
 
 const orders = [];
 
@@ -23,18 +24,10 @@ const handleOrderSubmit = function(event){
         timestamp: new Date().toISOString()
     }
 
-    // Update the page
-    let summary = `Orders ${order.quantity} ${order.size} T-shirts`;
-
-    // only if the user selected the option
-    if(order.giftWrap){
-        summary += " gift wrapped.";
-    }
-
-    orderSummary.textContent = summary;
-
     orders.push(newOrder);
     console.log(orders);
+
+    resultsDisplay.displayResults(newOrder);
 }
 
 
@@ -42,7 +35,7 @@ const handleOrderSubmit = function(event){
 const init = function(){
     // listen to the form
     orderForm.addEventListener('submit', handleOrderSubmit);
-
+    resultsDisplay.hideResults();
     console.log("App initialized");
 }
 
