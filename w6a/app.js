@@ -25,9 +25,8 @@ const handleOrderSubmit = function(event){
     }
 
     orders.push(newOrder);
-    console.log(orders);
 
-    resultsDisplay.displayResults(newOrder);
+    resultsDisplay.displayOrder(newOrder);
 }
 
 
