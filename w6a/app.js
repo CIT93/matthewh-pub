@@ -1,9 +1,8 @@
 // Import order-handler.js
 import * as orderHandler from "./order-handler.js";
-// Step 3: Refactor app.js
 import * as priceCalculator from './price-calculator.js';
-
 import * as resultsDisplay from './results-display.js';
+import * as orderStorage from './order-storage.js';
 
 // Select elements
 const orderForm = document.getElementById("order-form");
@@ -32,6 +31,11 @@ const handleOrderSubmit = function(event){
 
 // The init function
 const init = function(){
+    const loadedOrders = orderStorage.loadOrders();
+    if(loadedOrders.length > 0){
+        orders.push(...loadedOrders);
+        console.log('Orders loaded');
+    }
     // listen to the form
     orderForm.addEventListener('submit', handleOrderSubmit);
     resultsDisplay.hideResults();
