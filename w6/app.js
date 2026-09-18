@@ -1,8 +1,10 @@
 // Import order-handler.js
 import * as orderHandler from "./order-handler.js";
 import * as priceCalculator from './price-calculator.js';
-import * as resultsDisplay from './results-display.js';
+// import * as resultsDisplay from './results-display.js';
 import * as orderStorage from './order-storage.js';
+// Step 3.1_Import
+import * as orderList from './order-list.js';
 
 // Select elements
 const orderForm = document.getElementById("order-form");
@@ -26,7 +28,8 @@ const handleOrderSubmit = function(event){
     orders.push(newOrder);
     orderStorage.saveOrders(orders);
 
-    resultsDisplay.displayOrder(newOrder);
+    // Step 3.3_Update handleOrderSubmit
+    orderList.renderOrders(orders);
 }
 
 
@@ -35,6 +38,9 @@ const init = function(){
     const loadedOrders = orderStorage.loadOrders();
     if(loadedOrders.length > 0){
         orders.push(...loadedOrders);
+
+        // Step 3.2_Update init
+        orderList.renderOrders(orders);
         console.log('Orders loaded');
     }
     // listen to the form
