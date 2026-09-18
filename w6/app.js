@@ -9,6 +9,9 @@ import * as orderList from './order-list.js';
 // Select elements
 const orderForm = document.getElementById("order-form");
 
+// Step 5.2: JavaScript
+const clearButton = document.getElementById('clear-btn');
+
 const orders = [];
 
 // Create handleOrderSubmit function
@@ -32,6 +35,13 @@ const handleOrderSubmit = function(event){
     orderList.renderOrders(orders);
 }
 
+// Step 5.2: Javascript
+const handleClearOrders = function(){
+    orders.length = 0;
+    orderStorage.saveOrders(orders);
+    orderList.renderOrders(orders);
+}
+
 
 // The init function
 const init = function(){
@@ -45,7 +55,10 @@ const init = function(){
     }
     // listen to the form
     orderForm.addEventListener('submit', handleOrderSubmit);
-    resultsDisplay.hideResults();
+    
+    // Step 5.2: Javascript
+    clearButton.addEventListener('click', handleClearOrders);
+
     console.log("App initialized");
 }
 
