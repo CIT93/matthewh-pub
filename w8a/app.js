@@ -81,8 +81,8 @@ const handleFormSubmit = function(event){
 // Clear the in-memory array.
 // Update the UI to reflect the cleared state.
 const performClearAllData = function(){
-    // Setting length to 0 efficiently clears the array while keeping its const reference.
-    carbonFootprintEntries.length = 0;
+    // Start fresh with a brand-new empty array.
+    carbonFootprintEntries = [];
     storage.clearAllEntries();
     // Re-render table (will show "No entries")
     tableRenderer.renderTable(carbonFootprintEntries, {
