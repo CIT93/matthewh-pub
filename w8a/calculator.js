@@ -35,7 +35,6 @@ const calculateFoodDietPoints = function(dietType){
         case 'vegan': return 2;
         default: return 0;
     }
-}
 
 
 // Calculates points for Food Packaging based on WikiHow Method 1.
