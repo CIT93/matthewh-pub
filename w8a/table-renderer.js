@@ -205,7 +205,7 @@ export const renderTable = function(entries, callbacks){
     // We use a spread operator [...] to create a shallow copy so we don't modify the original array order.
     // Sorts the array in descending order (newest first)
     const sortedEntries = [...entries].sort(function(a, b){
-        return new Date(a.timestamp) - new Date(b.timestamp);
+        return new Date(b.timestamp) - new Date(a.timestamp);
     });
 
     for(const entry of sortedEntries){

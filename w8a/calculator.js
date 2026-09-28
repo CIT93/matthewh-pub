@@ -35,7 +35,7 @@ const calculateFoodDietPoints = function(dietType){
         case 'vegan': return 2;
         default: return 0;
     }
-
+}
 
 // Calculates points for Food Packaging based on WikiHow Method 1.
 // @param {string} foodPackaging - Type of food packaging ('prepackaged', 'balanced', 'fresh').
@@ -49,7 +49,6 @@ const calculateFoodPackagingPoints = function(foodPackaging){
         default: return 0;
     }
 }
-
 
 // This module contains the core logic for calculating carbon footprint points.
 // Calculate points for each category using our dedicated helper functions

@@ -82,7 +82,7 @@ const handleFormSubmit = function(event){
 // Update the UI to reflect the cleared state.
 const performClearAllData = function(){
     // Start fresh with a brand-new empty array.
-    carbonFootprintEntries = [];
+    carbonFootprintEntries.length = 0;
     storage.clearAllEntries();
     // Re-render table (will show "No entries")
     tableRenderer.renderTable(carbonFootprintEntries, {
@@ -94,7 +94,8 @@ const performClearAllData = function(){
     // Hide the results section
     resultsDisplay.hideResults();
     resetAllUIStates();
-};  
+};
+  
 
 // Handles the 'Clear Form' button click: resets the form fields and restores default values.
 const handleClearForm = function(){
