@@ -1,3 +1,8 @@
+
+// Step 7: Complete the Wiring
+// Step 7.1 Setup the Module Scope
+let moduleCallbacks = {};
+
 const orderTableBody = document.getElementById('order-table-body');
 
 // Formats a timestamp into a local date string.
@@ -10,6 +15,7 @@ const formatDateForDisplay = function(timestamp){
     });
 }
 
+// Step 5: Implement Event Delegation
 const tableBody = document.getElementById('order-table-body');
 
 tableBody.addEventListener('click', function(event) {
@@ -22,11 +28,20 @@ tableBody.addEventListener('click', function(event) {
     // there will be no ID. So we stop the function immediately.
     if (!id) return;
 
-    // 3. Temporary Test: Log the ID to prove it works!
-    console.log("Clicked button with ID:", id); 
+    // Step 7.3 Update the Listener Logic
+    if (target.classList.contains ('edit-btn')) {
+        if (moduleCallbacks.onEdit) moduleCallbacks.onEdit (id);
+    }
+    if (target.classList.contains ('delete-btn')) {
+        if (moduleCallbacks.onDelete) moduleCallbacks.onDelete (id);
+    }
 });
 
-export const renderOrders = function(orders){
+// Step 7.2 Receive the Functions
+export const renderOrders = function(orders, callbacks){
+    // Save the callbacks for later
+    moduleCallbacks = callbacks;
+
     orderTableBody.innerHTML = '';
 
     for (const order of orders){

@@ -10,6 +10,19 @@ const clearButton = document.getElementById('clear-btn');
 
 const orders = [];
 
+
+// Step 6: Connect to app.js
+// Step 6.1 Create the Functions
+const handleDelete = function(id) {
+    console.log("App.js: Requesting delete for order", id);
+};
+
+const handleEdit = function(id) {
+    console.log("App.js: Requesting edit for order", id);
+};
+
+
+
 // Create handleOrderSubmit function
 const handleOrderSubmit = function(event){
     // Stop the reload
@@ -29,7 +42,12 @@ const handleOrderSubmit = function(event){
     orders.push(newOrder);
     orderStorage.saveOrders(orders);
 
-    orderList.renderOrders(orders);
+    // orderList.renderOrders(orders);
+    // Step 6.2 Pass Functions to the Module
+    orderList.renderOrders(orders, {
+        onDelete: handleDelete,
+        onEdit: handleEdit
+    });
 }
 
 const handleClearOrders = function(){
