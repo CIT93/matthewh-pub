@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <script type="module" src="app.js"></script>
-    <!-- Step 1: Update the title -->
+    <!-- Step 1: Setup -->
     <title>Wiring the Dashboard</title>
 </head>
 <body>
-    <!-- Step 1: Update the title -->
+    <!-- Step 1: Setup -->
     <h1>Wiring the Dashboard</h1>
     
     <form id="order-form">
@@ -35,8 +35,6 @@
 
     <hr>
     
-    <!-- Step 1: Remove the old order-summary div -->
-    <!-- Step 1: Add a new Table structure -->
     <div id="order-history-section">
         <h2>Order History</h2>
         <table id="order-table">
@@ -46,6 +44,7 @@
                     <th>Qty</th>
                     <th>Size</th>
                     <th>Total</th>
+                    <!-- Step 3: Update HTML -->
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -53,7 +52,6 @@
                 </tbody>
         </table>
 
-        <!-- Step 5.1: HTML: Add a <button id="clear-btn"> below your table -->
         <button id="clear-btn">Clear all orders</button>
     </div>
     
