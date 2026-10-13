@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Smooth Scroll on Edit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wdth,wght@75..100,400..700&display=swap">
+<style>
+/* Layout: a short answer up top, then one stage where a scaled-down copy of the page
+   (with a movable "browser window" frame) plays in step with the real code beside it. */
+:root {
+  --bg: oklch(0.965 0.008 130);       /* paper with a faint leaf tint */
+  --surface: oklch(0.99 0.005 130);
+  --sunk: oklch(0.93 0.012 130);
+  --ink: oklch(0.22 0.02 150);
+  --muted: oklch(0.48 0.02 140);
+  --line: oklch(0.86 0.015 130);
+  --action: oklch(0.88 0.28 142);     /* neon green: the browser window, the click, the live line */
+  --on-action: oklch(0.2 0.03 150);   /* text set on neon */
+  --action-ink: oklch(0.42 0.13 145); /* the same idea where it has to be text or a thin line */
+  --action-soft: oklch(0.93 0.12 140);
+  --data: oklch(0.47 0.11 55);        /* soil brown: the entry's data as it moves */
+  --data-soft: oklch(0.93 0.04 70);
+  --dim: oklch(0.965 0.008 130 / .74);
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --body: "Instrument Sans", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: oklch(0.17 0.012 150); --surface: oklch(0.21 0.014 150); --sunk: oklch(0.26 0.016 150);
+    --ink: oklch(0.93 0.01 130); --muted: oklch(0.7 0.02 140); --line: oklch(0.33 0.018 150);
+    --action-ink: oklch(0.88 0.28 142); --action-soft: oklch(0.32 0.09 145);
+    --data: oklch(0.78 0.11 65); --data-soft: oklch(0.31 0.05 60);
+    --dim: oklch(0.17 0.012 150 / .76); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+    --bg: oklch(0.17 0.012 150); --surface: oklch(0.21 0.014 150); --sunk: oklch(0.26 0.016 150);
+    --ink: oklch(0.93 0.01 130); --muted: oklch(0.7 0.02 140); --line: oklch(0.33 0.018 150);
+    --action-ink: oklch(0.88 0.28 142); --action-soft: oklch(0.32 0.09 145);
+    --data: oklch(0.78 0.11 65); --data-soft: oklch(0.31 0.05 60);
+    --dim: oklch(0.17 0.012 150 / .76); color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-stretch: 90%; font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 20px; padding-block: 36px 64px; display: flex; flex-direction: column; gap: 40px; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.9rem, 4.5vw, 2.7rem); font-weight: 700; letter-spacing: -.01em; }
+h2 { font-size: 1.4rem; font-weight: 600; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; max-width: 66ch; }
+code, .mono { font-family: var(--mono); font-size: .88em; }
+.eyebrow { font-family: var(--mono); font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 14px; }
+.lede { font-size: 1.1rem; }
+.the-line { font-family: var(--mono); font-weight: 500; font-size: clamp(.8rem, 2.4vw, 1rem); background: var(--action); color: var(--on-action); padding: 12px 16px; overflow-x: auto; white-space: nowrap; }
+.the-line small { font-size: .8em; margin-right: 12px; opacity: .7; }
+
+/* ---------- controls ---------- */
+.stage { display: flex; flex-direction: column; gap: 16px; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; }
+.seg { display: flex; flex-wrap: wrap; border: 1px solid var(--line); background: var(--surface); }
+.seg button { border: 0; background: none; color: var(--ink); font: 500 .85rem var(--mono); padding: 8px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--action); color: var(--on-action); }
+.transport { display: flex; gap: 8px; }
+.transport button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 500 .9rem var(--body); padding: 8px 14px; cursor: pointer; }
+.transport button.primary { background: var(--action); color: var(--on-action); border-color: var(--on-action); font-weight: 600; min-width: 5.5em; }
+button:focus-visible { outline: 2px solid var(--action-ink); outline-offset: 2px; }
+.transport button:disabled { opacity: .4; cursor: default; }
+
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+.steps li { border-top: 3px solid var(--line); color: var(--muted); font: 500 .78rem var(--body); padding: 6px 2px 0; }
+.steps li .n { font-family: var(--mono); display: block; }
+.steps li.done { border-top-color: var(--muted); }
+.steps li.on { border-top-color: var(--action-ink); color: var(--ink); }
+@media (max-width: 620px) { .steps li .t { display: none; } }
+
+.grid { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (max-width: 800px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+/* ---------- the miniature page ---------- */
+.doc { position: relative; overflow: hidden; background: var(--surface); border: 1px solid var(--line); font-size: 11.5px; line-height: 1.3; }
+.doc-inner { padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+.doc .ttl { font-family: var(--display); font-weight: 700; font-size: 14px; }
+.doc .sub { color: var(--muted); }
+.fs { border: 1px solid var(--line); padding: 7px 9px; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.fs .lbl { color: var(--muted); }
+.fs .val { font-family: var(--mono); background: var(--sunk); padding: 2px 7px; min-width: 5.5em; text-align: right; transition: background .4s, color .4s; }
+.doc.filled .fs .val { background: var(--data-soft); color: var(--data); }
+.btnrow { display: flex; gap: 6px; }
+.fake-btn { background: var(--ink); color: var(--surface); padding: 5px 9px; font-weight: 600; transition: background .4s; }
+.doc.filled .fake-btn { background: var(--data); }
+.fake-btn.ghost { background: var(--sunk); color: var(--ink); }
+.doc.filled .fake-btn.ghost { background: var(--sunk); }
+.tbl-sec { display: flex; flex-direction: column; gap: 6px; padding-top: 6px; }
+.row { display: grid; grid-template-columns: 3.6em 1.6em 1fr 3.6em auto; gap: 6px; align-items: center; padding: 5px 4px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.row.head { color: var(--muted); font-weight: 600; border-bottom-color: var(--muted); }
+.row .acts { display: flex; gap: 3px; }
+.row .acts span { border: 1px solid var(--line); padding: 1px 5px; font-size: 10px; }
+.row.target.found { background: var(--data-soft); }
+.row.target.clicked .edit { background: var(--action); color: var(--on-action); border-color: var(--on-action); }
+
+.frame { position: absolute; left: 0; right: 0; top: 0; border: 3px solid var(--action); outline: 1px solid var(--action-ink); box-shadow: 0 0 0 2000px var(--dim); pointer-events: none; z-index: 3; }
+.frame.glide { transition: transform 1.1s cubic-bezier(.45, 0, .25, 1); }
+.frame .tag { position: absolute; right: 0; bottom: 0; background: var(--action); color: var(--on-action); font: 500 9.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; }
+.chip { position: absolute; left: 0; top: 0; z-index: 2; background: var(--data); color: var(--surface); font: 500 10.5px var(--mono); padding: 3px 7px; opacity: 0; transition: transform .8s cubic-bezier(.45, 0, .25, 1), opacity .3s; white-space: nowrap; }
+.chip.show { opacity: 1; }
+.row.target .edit { transition: background 0s, color 0s, border-color 0s; }
+.doc.anim .row.target.clicked .edit { transition-delay: 1.6s; }
+/* The pointer travels to the Edit button once, stops, and clicks once. */
+.cursor { position: absolute; left: 0; top: 0; z-index: 4; opacity: 0; transition: transform 1.6s cubic-bezier(.4, 0, .2, 1), opacity .3s; }
+.cursor.show { opacity: 1; }
+.cursor svg { display: block; width: 16px; height: 20px; }
+.cursor .arrow { fill: var(--ink); stroke: var(--surface); stroke-width: 1.2; stroke-linejoin: round; }
+.cursor .ring { position: absolute; left: -13px; top: -13px; width: 26px; height: 26px; box-sizing: border-box; border: 3px solid var(--action); outline: 1px solid var(--action-ink); border-radius: 50%; opacity: 0; }
+.cursor.click .ring { animation: tap .9s ease-out 1 both; }
+.doc.anim .cursor.click .ring { animation-delay: 1.6s; }
+@keyframes tap { 0% { scale: .4; opacity: 0; } 15% { opacity: 1; } 100% { scale: 1.5; opacity: 0; } }
+.sees { font-size: .9rem; border: 1px solid var(--line); background: var(--surface); padding: 9px 12px; }
+.sees b { font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .8rem; color: var(--muted); }
+.legend i { display: inline-block; width: 11px; height: 11px; margin-right: 5px; vertical-align: -1px; }
+.legend .w { border: 2.5px solid var(--action); outline: 1px solid var(--action-ink); }
+.legend .d { background: var(--data); }
+.legend .x { background: var(--dim); border: 1px solid var(--line); }
+
+/* ---------- code ---------- */
+.caption { background: var(--surface); border: 1px solid var(--line); padding: 14px 16px; min-height: 6.6em; }
+.caption .eyebrow { display: block; margin-bottom: 4px; color: var(--action-ink); }
+.codeblock { background: var(--surface); border: 1px solid var(--line); overflow-x: auto; }
+.codeblock .file { font: 500 .75rem var(--mono); color: var(--muted); padding: 7px 12px; border-bottom: 1px solid var(--line); background: var(--sunk); position: sticky; left: 0; }
+.codeblock pre { margin: 0; padding: 6px 0; font: 400 12.5px/1.65 var(--mono); width: max-content; min-width: 100%; }
+.ln { display: block; padding: 0 14px 0 0; white-space: pre; }
+.ln .no { display: inline-block; width: 3.2em; text-align: right; margin-right: 14px; color: var(--muted); opacity: .7; user-select: none; }
+.ln.hot { background: var(--action-soft); }
+.ln.hot .no { color: var(--ink); opacity: 1; }
+.ln.gone .tx { text-decoration: line-through; color: var(--muted); }
+.ln.gap .tx { color: var(--muted); }
+
+/* ---------- prose sections ---------- */
+section { display: flex; flex-direction: column; gap: 16px; }
+.why { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px 32px; }
+.why div { display: flex; flex-direction: column; gap: 4px; border-top: 2px solid var(--ink); padding-top: 10px; }
+.why p, .notes p { font-size: .95rem; }
+.notes { display: grid; grid-template-columns: minmax(0, 12em) minmax(0, 1fr); gap: 10px 20px; border-top: 1px solid var(--line); padding-top: 14px; }
+.notes dt { font-family: var(--mono); font-size: .85rem; color: var(--action-ink); }
+.notes dd { margin: 0; max-width: 66ch; font-size: .95rem; }
+@media (max-width: 620px) { .notes { grid-template-columns: minmax(0, 1fr); gap: 2px; } .notes dd { margin-bottom: 10px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .frame.glide, .chip, .fs .val, .fake-btn, .cursor, .doc.anim .row.target.clicked .edit { transition: none; }
+  .cursor.click .ring { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Why Edit scrolls the page back to the top</h1>
+    <p class="lede">The saved entries live in a table at the bottom of a long page. The form that edits them is at the top. When someone clicks Edit on a row, the app fills in the form, and one line then brings the form into view:</p>
+    <div class="the-line"><small>app.js:173</small>window.scrollTo({ top: 0, behavior: 'smooth' });</div>
+    <p>Without it, the edit happens where the user cannot see it. Play the sequence below, then switch the scroll behavior to compare.</p>
+  </header>
+
+  <div class="stage">
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Scroll behavior">
+        <button type="button" id="modeSmooth" data-mode="smooth" aria-pressed="true">smooth (as written)</button>
+        <button type="button" id="modeInstant" data-mode="instant" aria-pressed="false">instant</button>
+        <button type="button" id="modeNone" data-mode="none" aria-pressed="false">line removed</button>
+      </div>
+      <div class="transport">
+        <button type="button" id="playBtn" class="primary">Play</button>
+      </div>
+    </div>
+
+    <ol class="steps" id="steps" aria-label="Progress through the six steps"></ol>
+
+    <div class="grid">
+      <div class="col">
+        <div class="doc" id="doc" aria-hidden="true">
+          <div class="doc-inner">
+            <div class="ttl">Carbon Footprint Calculator</div>
+            <div class="sub">form#carbonFootprintForm</div>
+            <div class="fs" id="firstField"><span class="lbl">Household size</span><span class="val" data-empty="1" data-full="3">1</span></div>
+            <div class="fs"><span class="lbl">Home size (sq ft)</span><span class="val" data-empty="0" data-full="1500">0</span></div>
+            <div class="fs"><span class="lbl">Diet type</span><span class="val" data-empty="meatHeavy" data-full="vegetarian">meatHeavy</span></div>
+            <div class="fs"><span class="lbl">Washer runs / week</span><span class="val" data-empty="0" data-full="5">0</span></div>
+            <div class="fs"><span class="lbl">New items / year</span><span class="val" data-empty="0" data-full="4">0</span></div>
+            <div class="btnrow"><span class="fake-btn" id="fakeSubmit">Calculate Footprint</span><span class="fake-btn ghost">Clear Form</span></div>
+            <div class="tbl-sec" id="tblSec">
+              <div class="ttl">Your Saved Footprint Entries</div>
+              <div class="row head"><span>Date</span><span>HH</span><span>Home</span><span>Diet</span><span>Actions</span></div>
+              <div class="row"><span>Oct 8</span><span>2</span><span>Apt.</span><span>Vegan</span><span class="acts"><span>Edit</span><span>Delete</span></span></div>
+              <div class="row target" id="targetRow"><span>Oct 6</span><span>3</span><span>1500 sqft</span><span>Veg.</span><span class="acts"><span class="edit" id="editBtn">Edit</span><span>Delete</span></span></div>
+              <div class="row"><span>Oct 2</span><span>4</span><span>2400 sqft</span><span>Average</span><span class="acts"><span>Edit</span><span>Delete</span></span></div>
+              <div class="row"><span>Sep 29</span><span>1</span><span>Apt.</span><span>Meat</span><span class="acts"><span>Edit</span><span>Delete</span></span></div>
+            </div>
+          </div>
+          <div class="chip" id="chip">entryToEdit { id, &hellip; }</div>
+          <div class="cursor" id="cursor"><span class="ring"></span><svg viewBox="0 0 16 20"><path class="arrow" d="M1 1 L1 15 L5 11.5 L7.8 17.5 L10 16.5 L7.3 10.6 L12.5 10.6 Z"></path></svg></div>
+          <div class="frame" id="frame"><span class="tag">browser window</span></div>
+        </div>
+        <div class="sees" id="sees" aria-live="polite"></div>
+        <div class="legend">
+          <span><i class="w"></i>what fits on screen</span>
+          <span><i class="x"></i>rest of the page</span>
+          <span><i class="d"></i>the entry's data</span>
+        </div>
+        <p class="eyebrow">The whole page, scaled down. Example entries.</p>
+      </div>
+
+      <div class="col">
+        <div class="caption"><span class="eyebrow" id="capStep"></span><p id="capText"></p></div>
+        <div id="code"></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2>What the smooth scroll gives the user</h2>
+    <div class="why">
+      <div><h3>They see the result of their click</h3><p>Filling the form is the only response to Edit. If the form is off screen, the click appears to do nothing. Scrolling puts the response in front of them.</p></div>
+      <div><h3>They don't have to go find the form</h3><p>The next thing they need is the first field. The app takes them there, which saves a manual scroll on every edit, and a long one on a phone.</p></div>
+      <div><h3>They keep their bearings</h3><p>An animated scroll shows the page moving upward. The user can tell this is the same page and that the table is still below. A jump gives no such clue.</p></div>
+      <div><h3>The change of mode is noticeable</h3><p>The form now updates an existing entry, and its button reads Update Entry. Arriving at the form with the old values already in it makes that hard to miss.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Reading the call</h2>
+    <dl class="notes">
+      <dt>top: 0</dt>
+      <dd>A vertical position in pixels, measured from the top of the document. Zero is the very top of the page, above the heading, so the form's first fields come into view.</dd>
+      <dt>behavior: 'smooth'</dt>
+      <dd>Asks the browser to animate the scroll. The other values are <code>'instant'</code> (jump) and <code>'auto'</code> (follow the page's CSS <code>scroll-behavior</code>, which is a jump by default).</dd>
+      <dt>It does not wait</dt>
+      <dd><code>scrollTo</code> starts the animation and returns straight away. The <code>console.log</code> on line 174 runs while the page is still moving.</dd>
+      <dt>Order matters</dt>
+      <dd>The form is populated on line 172, before the scroll on line 173. By the time the form slides into view it already holds the entry's values.</dd>
+      <dt>What it leaves out</dt>
+      <dd>It moves the view, not keyboard focus, so a keyboard or screen reader user is still on the Edit button. It also aims at pixel 0 instead of at the form. <code>carbonFootprintForm.scrollIntoView({ behavior: 'smooth' })</code> followed by a <code>focus()</code> on the first input would cover both.</dd>
+    </dl>
+  </section>
+</div>
+
+<script>
+(function () {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = function (id) { return document.getElementById(id); };
+  const doc = $('doc'), frame = $('frame'), chip = $('chip'), cursor = $('cursor');
+  const targetRow = $('targetRow'), editBtn = $('editBtn'), tblSec = $('tblSec'), firstField = $('firstField');
+
+  const stepNames = ['Scrolled down', 'Click Edit', 'Find the entry', 'Fill the form', 'Scroll to top', 'What they see'];
+  const durations = [2000, 4000, 2500, 4500, 4000, 0];
+
+  // [line number, text, steps on which the line is highlighted]
+  const files = [
+    ['table-renderer.js  (one click listener on the table body)', [
+      [226, "    const id = target.dataset.id;", [1]],
+      [null, "    // ...", []],
+      [235, "    } else if (target.classList.contains('edit') && typeof _currentCallbacks.onEdit === 'function') {", [1]],
+      [237, "        resetRowConfirmationState();", []],
+      [239, "        _currentCallbacks.onEdit(id);", [1]],
+      [240, "    }", []]
+    ]],
+    ['app.js', [
+      [164, "const handleEditEntry = function(id){", []],
+      [165, "    console.log(`Edit button clicked for ID: ${id} funcitonality added in week 8`);", []],
+      [166, "    // 1. Find the entry object in our in-memory array using its ID.", []],
+      [167, "    const entryToEdit = carbonFootprintEntries.find(function(entry){", [2]],
+      [168, "        return entry.id === id;", [2]],
+      [169, "    });", [2]],
+      [170, "    // 2. Populate the form with the data from the found entry.", []],
+      [171, "    if(entryToEdit) {", []],
+      [172, "        formHandler.populateFormForEdit(entryToEdit);", [3]],
+      [173, "        window.scrollTo({ top: 0, behavior: 'smooth' });", [4], 'scroll'],
+      [174, "        console.log(`Editing entry id ${id} form populated`);", []],
+      [175, "        resetAllUIStates();", []],
+      [176, "    }", []],
+      [178, "    resetAllUIStates();", []],
+      [179, "};", []]
+    ]],
+    ['form-handler.js', [
+      [64, "export const populateFormForEdit = function (entry) {", [3]],
+      [65, "    entryIdInput.value = entry.id;", [3]],
+      [66, "    householdMembersInput.value = entry.householdMembers;", [3]],
+      [null, "    // ...one line per remaining input", []],
+      [76, "    submitButton.textContent = 'Update Entry';", [3]],
+      [78, "}", []]
+    ]]
+  ];
+
+  const captions = {
+    0: { all: "The table of saved entries sits below a long form. To reach it the user has scrolled down, so the form is off screen above them." },
+    1: { all: "The click lands on a row's Edit button. A single listener on the table body reads the button's data-id and calls onEdit, the callback app.js handed to renderTable. That callback is handleEditEntry." },
+    2: { all: "handleEditEntry searches the in-memory array for the entry whose id matches. find returns that entry object." },
+    3: { all: "populateFormForEdit copies the entry into the form's inputs, stores its id in the hidden entryId field, and renames the submit button to Update Entry. All of this happens above the visible window." },
+    4: {
+      smooth: "window.scrollTo sends the window to pixel 0 of the document. behavior: 'smooth' makes the browser animate the trip: the table slides away and the filled form slides in.",
+      instant: "With behavior: 'instant' the window is at the top on the very next frame. The form is there, but the screen has changed all at once.",
+      none: "With the line removed, the handler has nothing left to do. The form is filled in and nothing on screen has moved."
+    },
+    5: {
+      smooth: "The user is looking at the filled form and watched the page carry them there. They know the table is just below, where they left it.",
+      instant: "The user is looking at the filled form, but has to work out what happened to the table they were just reading.",
+      none: "The user is still looking at the table. Edit seems to have done nothing, unless they think to scroll up and check the form."
+    }
+  };
+  const sees = {
+    table: "<b>On screen:</b> the table of saved entries.",
+    tableStale: "<b>On screen:</b> the same table. Nothing appears to have changed.",
+    moving: "<b>On screen:</b> the page gliding upward.",
+    form: "<b>On screen:</b> the form, holding the entry's values."
+  };
+
+  let step = 0, mode = 'smooth', playing = false, timer = null;
+
+  // Build the code panel.
+  const codeHost = $('code');
+  codeHost.className = 'col';
+  const lineEls = [];
+  let scrollLine = null;
+  files.forEach(function (f) {
+    const block = document.createElement('div'); block.className = 'codeblock';
+    const head = document.createElement('div'); head.className = 'file'; head.textContent = f[0];
+    const pre = document.createElement('pre');
+    f[1].forEach(function (l) {
+      const ln = document.createElement('span'); ln.className = 'ln' + (l[0] === null ? ' gap' : '');
+      const no = document.createElement('span'); no.className = 'no'; no.textContent = l[0] === null ? '' : l[0];
+      const tx = document.createElement('span'); tx.className = 'tx'; tx.textContent = l[1];
+      ln.appendChild(no); ln.appendChild(tx); pre.appendChild(ln);
+      lineEls.push({ el: ln, steps: l[2] });
+      if (l[3] === 'scroll') scrollLine = { el: ln, tx: tx };
+    });
+    block.appendChild(head); block.appendChild(pre); codeHost.appendChild(block);
+  });
+
+  // Build the step strip.
+  const stepsHost = $('steps');
+  const stepEls = stepNames.map(function (name, i) {
+    const li = document.createElement('li');
+    li.innerHTML = '<span class="n">' + (i + 1) + '</span><span class="t"></span>';
+    li.querySelector('.t').textContent = name;
+    stepsHost.appendChild(li);
+    return li;
+  });
+
+  const offsetIn = function (el) {
+    const a = el.getBoundingClientRect(), b = doc.getBoundingClientRect();
+    return { x: a.left - b.left, y: a.top - b.top, w: a.width, h: a.height };
+  };
+
+  const render = function (animate) {
+    // The window frame is as tall as the table section, like a screen that fits the table.
+    const tbl = offsetIn(tblSec);
+    const frameH = doc.clientHeight - tbl.y + 4;
+    frame.style.height = frameH + 'px';
+    const atTop = step >= 4 && mode !== 'none';
+    frame.classList.toggle('glide', animate && step === 4 && mode === 'smooth' && !reduced);
+    frame.style.transform = 'translateY(' + (atTop ? 0 : doc.clientHeight - frameH) + 'px)';
+
+    // Pointer and row state. The pointer waits in the table, moves to Edit once, and rests there.
+    const eb = offsetIn(editBtn);
+    const tip = step >= 1 ? { x: eb.x + eb.w / 2, y: eb.y + eb.h / 2 } : { x: eb.x - 90, y: eb.y + 46 };
+    const travelling = animate && step === 1 && !reduced;
+    doc.classList.toggle('anim', travelling);
+    cursor.style.transitionDuration = travelling ? '' : '0s';
+    cursor.style.transform = 'translate(' + tip.x + 'px,' + tip.y + 'px)';
+    cursor.classList.toggle('show', step <= 3 || mode === 'none');
+    cursor.classList.toggle('click', step === 1);
+    targetRow.classList.toggle('clicked', step >= 1);
+    targetRow.classList.toggle('found', step >= 2);
+
+    // The entry travelling from the array (shown as its row) to the form.
+    const from = offsetIn(targetRow), to = offsetIn(firstField);
+    const pos = step >= 3 ? { x: to.x + 6, y: to.y - 9 } : { x: from.x + 40, y: from.y - 9 };
+    chip.style.transitionDuration = animate ? '' : '0s';
+    chip.style.transform = 'translate(' + pos.x + 'px,' + pos.y + 'px)';
+    chip.classList.toggle('show', step === 2 || step === 3);
+
+    // Form contents.
+    const filled = step >= 3;
+    doc.classList.toggle('filled', filled);
+    doc.querySelectorAll('.val').forEach(function (v) { v.textContent = filled ? v.dataset.full : v.dataset.empty; });
+    $('fakeSubmit').textContent = filled ? 'Update Entry' : 'Calculate Footprint';
+
+    // Code highlight, with line 173 rewritten to match the chosen behavior.
+    lineEls.forEach(function (l) { l.el.classList.toggle('hot', l.steps.indexOf(step) !== -1); });
+    scrollLine.tx.textContent = "        window.scrollTo({ top: 0, behavior: '" + (mode === 'instant' ? 'instant' : 'smooth') + "' });";
+    scrollLine.el.classList.toggle('gone', mode === 'none');
+
+    // Caption, on-screen summary, step strip, buttons.
+    const c = captions[step];
+    $('capStep').textContent = 'Step ' + (step + 1) + ' of 6: ' + stepNames[step];
+    $('capText').textContent = c.all || c[mode];
+    let s = sees.table;
+    if (step >= 4 && mode === 'none') s = sees.tableStale;
+    else if (step === 4 && mode === 'smooth') s = sees.moving;
+    else if (step >= 4) s = sees.form;
+    $('sees').innerHTML = s;
+    stepEls.forEach(function (li, i) { li.classList.toggle('on', i === step); li.classList.toggle('done', i < step); if (i === step) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current'); });
+    $('playBtn').textContent = playing ? 'Pause' : (step === 5 ? 'Replay' : 'Play');
+  };
+
+  const go = function (n, animate) { step = Math.max(0, Math.min(5, n)); render(animate); };
+  const stop = function () { playing = false; clearTimeout(timer); };
+  const tick = function () {
+    if (!playing) return;
+    if (step >= 5) { stop(); render(false); return; }
+    timer = setTimeout(function () { go(step + 1, true); tick(); }, durations[step]);
+  };
+  const play = function () {
+    stop();
+    if (step >= 5) go(0, false);
+    playing = true; render(false); tick();
+  };
+
+  $('playBtn').addEventListener('click', function () { if (playing) { stop(); render(false); } else play(); });
+  document.querySelectorAll('.seg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      mode = b.dataset.mode;
+      document.querySelectorAll('.seg button').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      stop(); go(0, false);
+      if (!reduced) play();
+    });
+  });
+  window.addEventListener('resize', function () { render(false); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { render(false); });
+
+  render(false);
+  if (!reduced) setTimeout(play, 900);
+})();
+</script>
+</body>
+</html>
