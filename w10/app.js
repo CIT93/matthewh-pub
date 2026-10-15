@@ -14,15 +14,19 @@ const orders = [];
 const handleDelete = function(id) {
     console.log("App.js: Requesting delete for order", id);
 
+    // Step 1: Find the position with the ID
     const index = orders.findIndex (function (savedOrder) {
         return savedOrder.id === id;
     });
 
+    // Step 1: -1 means it's empty and nothing to delete
     if (index === -1) return;
 
+    // Step 1: remove the item at the position
     orders.splice (index, 1);
     orderStorage.saveOrders (orders);
 
+    // Step 1: Rerender passing the callbacks
     orderList.renderOrders (orders, {
         onDelete: handleDelete,
         onEdit: handleEdit
@@ -63,6 +67,8 @@ const handleOrderSubmit = function(event){
 const handleClearOrders = function(){
     orders.length = 0;
     orderStorage.saveOrders(orders);
+
+    // Step 1: passing the callbacks
     orderList.renderOrders (orders, {
         onDelete: handleDelete,
         onEdit: handleEdit
@@ -76,6 +82,7 @@ const init = function(){
     if(loadedOrders.length > 0){
         orders.push(...loadedOrders);
 
+        // Step 1: passing the callbacks
         orderList.renderOrders (orders, {
             onDelete: handleDelete,
             onEdit: handleEdit
