@@ -11,10 +11,22 @@ const clearButton = document.getElementById('clear-btn');
 const orders = [];
 
 
-// Step 6: Connect to app.js
-// Step 6.1 Create the Functions
 const handleDelete = function(id) {
     console.log("App.js: Requesting delete for order", id);
+
+    const index = orders.findIndex (function (savedOrder) {
+        return savedOrder.id === id;
+    });
+
+    if (index === -1) return;
+
+    orders.splice (index, 1);
+    orderStorage.saveOrders (orders);
+
+    orderList.renderOrders (orders, {
+        onDelete: handleDelete,
+        onEdit: handleEdit
+    });
 };
 
 const handleEdit = function(id) {
@@ -32,7 +44,6 @@ const handleOrderSubmit = function(event){
     const calculatedPrice = priceCalculator.calculateTotal(order);
 
     const newOrder = {
-        // Step 2: Upgrade Data (Add Unique ID)
         id: Date.now().toString(),
         ...order,
         ...calculatedPrice,
@@ -43,7 +54,6 @@ const handleOrderSubmit = function(event){
     orderStorage.saveOrders(orders);
 
     // orderList.renderOrders(orders);
-    // Step 6.2 Pass Functions to the Module
     orderList.renderOrders(orders, {
         onDelete: handleDelete,
         onEdit: handleEdit
@@ -53,7 +63,10 @@ const handleOrderSubmit = function(event){
 const handleClearOrders = function(){
     orders.length = 0;
     orderStorage.saveOrders(orders);
-    orderList.renderOrders(orders);
+    orderList.renderOrders (orders, {
+        onDelete: handleDelete,
+        onEdit: handleEdit
+    });
 }
 
 
@@ -63,7 +76,10 @@ const init = function(){
     if(loadedOrders.length > 0){
         orders.push(...loadedOrders);
 
-        orderList.renderOrders(orders);
+        orderList.renderOrders (orders, {
+            onDelete: handleDelete,
+            onEdit: handleEdit
+        });
         console.log('Orders loaded');
     }
 
