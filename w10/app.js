@@ -69,14 +69,32 @@ const handleOrderSubmit = function(event){
     const order = orderHandler.getOrderInputs();
     const calculatedPrice = priceCalculator.calculateTotal(order);
 
-    const newOrder = {
-        id: Date.now().toString(),
-        ...order,
-        ...calculatedPrice,
-        timestamp: new Date().toISOString()
+    // Step 3: A nonempty hidden Id means editing existing order
+    const orderId = orderIdInput.value;
+
+    // Step 3: Get the position of the edited order
+    const index = orders.findIndex (function (savedOrder) {
+        return savedOrder.id === orderId;
+    });
+
+    if (index !== -1) {
+        // Step 3: spred the old order into existing
+        orders [index] = {
+            ...orders [index],
+            ...order,
+            ...calculatedPrice
+        };
+    } else {
+        // Step 3: otherwise create a brand new order
+        const newOrder = {
+            id: Date.now ().toString (),
+            ...order,
+            ...calculatedPrice,
+            timestemp: new Date ().toISOString ()
+        };
+        orders.push (newOrder);
     }
 
-    orders.push(newOrder);
     orderStorage.saveOrders(orders);
 
     // orderList.renderOrders(orders);
@@ -84,6 +102,10 @@ const handleOrderSubmit = function(event){
         onDelete: handleDelete,
         onEdit: handleEdit
     });
+
+    // Step 3: Clear hidden id and reset
+    orderIdInput.value = '';
+    orderForm.reset ();
 }
 
 const handleClearOrders = function(){
