@@ -7,6 +7,9 @@ import * as orderList from './order-list.js';
 // Select elements
 const orderForm = document.getElementById("order-form");
 const clearButton = document.getElementById('clear-btn');
+const quantityInput = document.getElementById ('qty');
+const giftWrapCheckbox = document.getElementById ('gift-wrap');
+const orderIdInput = document.getElementById ('order-id');
 
 const orders = [];
 
@@ -35,6 +38,25 @@ const handleDelete = function(id) {
 
 const handleEdit = function(id) {
     console.log("App.js: Requesting edit for order", id);
+
+    // Step 2: Grab the order with the ID
+    const order = orders.find (function (savedOrder) {
+        return savedOrder.id === id;
+    });
+    // Step 2: stop if no match
+    if (!order) return;
+
+    // Step 2: REMEMBER!!! .value for normal inputs
+    quantityInput.value = order.quantity;
+
+    // Step: Radio buttons don't have a single value, so check that match the size
+    document.querySelector (`input[name="size"][value="${order.size}"]`).checked = true;
+
+    // Step 2: REMEMBER!!! .checked with checkboxes
+    giftWrapCheckbox.checked = order.giftWrap;
+
+    // Step 2: note witch is being edited
+    orderIdInput.value = order.id;
 };
 
 
